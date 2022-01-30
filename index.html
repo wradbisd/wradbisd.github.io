@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            background-color: #fff;
+            font-family: sans-serif;
+            font-size: 16px;
+
+            overflow: hidden;
+        }
+
+        #content {
+            width: 100%;
+            height: 100%;
+
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-content: center;
+            align-items: center;
+        }
+        #background {
+            min-width: 100vw;
+            filter: blur(2px);
+            transform: translateY(20px) scale(1.2);
+            position: absolute;
+            z-index:0;
+
+            transform: scale(1.2);
+        }
+        #background.loaded{
+            animation: upward-shift 1s forwards;
+        }
+        @keyframes upward-shift {
+            from {
+                bottom: 20px;
+                filter: blur(2px);
+            }
+
+            to {
+                bottom: 0px;
+                filter: blur(0px);
+            }
+        }
+
+        #title-wrapper {
+            position: absolute;
+            z-index: 1;
+            max-width: 100%;
+            min-width: 100%;
+            max-height: 100%;
+            min-height: 100%;
+            text-align: center;
+        }
+        #title {
+            object-fit: contain;
+            max-width: inherit;
+            margin: auto;
+            margin-top: 10%;
+            width: 70%;
+        }
+        #subtitle-wrapper {
+            position: absolute;
+            z-index: 1;
+            max-width: 100%;
+            min-width: 100%;
+            max-height: 100%;
+            min-height: 100%;
+            text-align: center;
+        }
+        #subtitle {
+            object-fit: contain;
+            max-width: inherit;
+            margin: auto;
+            margin-top: 25%;
+            width: 30%;
+        }
+        .fade-in {
+            animation: fade-in .25s linear forwards;
+        }
+        @keyframes fade-in {
+            from {
+                opacity: 0%;
+            }
+
+            to {
+                opacity: 100%;
+            }
+        }
+        .fade-in-out {
+            animation: fade-in-out 1s alternate linear infinite;
+        }
+        @keyframes fade-in-out {
+            from {
+                opacity: 100%;
+            }
+
+            to {
+                opacity: 40%;
+            }
+        }
+    </style>
+
+    <div id="content">
+        <img id="background" onload="addLoaded()" src="StaticContent/background-school.jpeg" />
+        <div id="title-wrapper">
+            <img id="title" src="StaticContent/WelcomeText.png" />
+        </div>
+        <div id="subtitle-wrapper">
+            <img id="subtitle" src="StaticContent/ClickToStartText.png" />
+        </div>
+    </div>
+
+    <script>
+        function addLoaded() {
+            document.getElementById('background').addEventListener("webkitAnimationEnd", showText, false);
+            document.getElementById('background').addEventListener("animationend", showText, false);
+            document.getElementById('background').addEventListener("oanimationend", showText, false);
+            document.getElementById('background').classList.add('loaded');
+
+        }
+
+        function showText() {
+            document.getElementById('subtitle-wrapper').addEventListener("webkitAnimationEnd", flashText, false);
+            document.getElementById('subtitle-wrapper').addEventListener("animationend", flashText, false);
+            document.getElementById('subtitle-wrapper').addEventListener("oanimationend", flashText, false);
+            document.getElementById('subtitle-wrapper').classList.add('fade-in');
+            document.body.addEventListener('click', continueToSite);
+        }
+
+        function flashText() {
+            document.getElementById('subtitle-wrapper').className = 'fade-in-out';
+        }
+
+        function continueToSite() {
+            window.location.replace('/classroom.html');
+        }
+    </script>
+</body>
+</html>

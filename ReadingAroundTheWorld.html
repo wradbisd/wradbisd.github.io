@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Miniature Earth | Photo Locations Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <style>
+        body {
+            overflow: hidden;
+        }
+        #background {
+            width: 100%;
+            transition: 1s cubic-bezier(0.4, 0, 1, 1);
+            transition-property: all;
+            position:absolute;
+        }
+        #globe-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #myearth {
+            max-height: 100vh;
+            width: 80%;
+            transform: scale(.01);
+            
+            pointer-events: none;
+        }
+        .show-globe {
+            transform: scale(1) !important;
+            pointer-events: auto !important;
+        }
+
+
+        #preview-block {
+            position: absolute;
+            width: 360px;
+            background-image: url('StaticContent/blueSquare.png');
+            background-size: 100% 100%;
+            border-radius: 75px;
+            display: flex;
+            flex-direction: column;
+            filter: drop-shadow(0 2px 8px RGBA(0,0,0,0.5));
+            transform: scale(0.001);
+            transition: transform 0.1s ease-out;
+            left: -180px;
+            top: -160px;
+        }
+            #preview-block:hover {
+                background-image: url('StaticContent/greenSquare.png');
+            }
+
+        #preview-content-title {
+            margin: 20px 25px 10px 25px;
+            min-height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        #preview-content-container {
+            width: calc(100% - 40px);
+            margin: 0 20px 50px 20px;
+            padding-top: 56.25%;
+            position: relative;
+            background-color: aliceblue;
+            cursor: pointer;
+            pointer-events: all;
+        }
+            
+
+        #preview-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-size: cover;
+            background-position: center;
+        }
+
+        #preview-block.content-appear {
+            transition: transform 0.15s ease-out;
+            transform: scale(1);
+        }
+
+        #photo-content-block {
+            position: absolute;
+            width: 360px;
+            background-image: url('StaticContent/greenSquare.png');
+            background-size: 100% 100%;
+            border-radius: 75px;
+            display: flex;
+            flex-direction: column;
+            filter: drop-shadow(0 2px 8px RGBA(0,0,0,0.5));
+            transform: scale(0.001);
+            transition: transform 0.1s ease-out;
+            left: -180px;
+            top: -160px;
+        }
+
+        #photo-content-title {
+            margin: 20px 25px 10px 25px;
+            min-height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        #photo-content-container {
+            width: calc(100% - 40px);
+            margin: 0 20px 50px 20px;
+            padding-top: 56.25%;
+            position: relative;
+            background-color: aliceblue;
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+        #photo-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-size: cover;
+        }
+
+        #photo-content-block.content-appear {
+            transition: transform 0.15s ease-out;
+            transform: scale(1);
+        }
+
+        #close-preview-overlay {
+            position: absolute;
+            right: -7px;
+            top: -3px;
+            width: 32px;
+            height: 32px;
+            background: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjQgMjAuMTg4bC04LjMxNS04LjIwOSA4LjItOC4yODItMy42OTctMy42OTctOC4yMTIgOC4zMTgtOC4zMS04LjIwMy0zLjY2NiAzLjY2NiA4LjMyMSA4LjI0LTguMjA2IDguMzEzIDMuNjY2IDMuNjY2IDguMjM3LTguMzE4IDguMjg1IDguMjAzeiIvPjwvc3ZnPg) center center no-repeat;
+            background-size: 25px;
+            filter: drop-shadow(0 0 3px black);
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+        #content-display-container {
+            display: none;
+            opacity: 0;
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            overflow: hidden;
+            transition: opacity 0.15s linear;
+            justify-content: center;
+            justify-content: center;
+            align-content: center;
+            flex-direction:column;
+        }
+            #content-display-container.content-appear {
+                display: flex;
+                opacity: 1;
+            }
+
+        #close-content-display {
+            position: absolute;
+            right: 5%;
+            top: 5%;
+            width: 10%;
+            height: 10%;
+            background: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjQgMjAuMTg4bC04LjMxNS04LjIwOSA4LjItOC4yODItMy42OTctMy42OTctOC4yMTIgOC4zMTgtOC4zMS04LjIwMy0zLjY2NiAzLjY2NiA4LjMyMSA4LjI0LTguMjA2IDguMzEzIDMuNjY2IDMuNjY2IDguMjM3LTguMzE4IDguMjg1IDguMjAzeiIvPjwvc3ZnPg) center center no-repeat;
+            background-size: 20%;
+            filter: drop-shadow(0 0 3px black);
+            cursor: pointer;
+            pointer-events: all;
+        }
+            #close-content-display:hover {
+                filter: drop-shadow(0 0 6px white);
+            }
+            #close-content-display:active {
+                filter: invert(.3);
+            }
+
+        #title-overlay-container {
+            position: absolute;
+            width: 500px;
+            display: flex;
+            flex-direction: column;
+            /*filter: drop-shadow(0 2px 8px RGBA(0,0,0,0.5));*/
+            transform: scale(0.001);
+            transition: transform 0.1s ease-out;
+            left: -250px;
+            top: -65px;
+            align-items: center;
+        }
+            #title-overlay-container.content-appear {
+                transition: transform 0.15s ease-out;
+                transform: scale(1);
+            }
+
+        #title-overlay-bubble {
+            background: ivory;
+            display: block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 2;
+        }
+        #title-overlay-pointer {
+            height: 40px;
+            width: 40px;
+            background: ivory;
+            margin: 0 auto;
+            transform: rotate(45deg);
+            margin-top: -22px;
+            position: relative;
+            z-index: 1;
+        }
+
+        #title-overlay-textblock {
+            display: block;
+            font-size: 1.5em;
+            overflow: hidden;
+            white-space: nowrap;
+            min-width: 75px;
+        }
+
+        #content-region {
+            margin: auto;
+            max-width: calc( ( 100vh - ( 56px + 24px + 136px ) ) * (16/9) );
+            min-width: calc( ( 480px ) * (16/9) );
+            display: flex;
+            max-height: 100%;
+        }
+            #content-region.photo {
+                max-height: 90vh;
+            }
+            #content-region.photo > img {
+                height: 100%;
+                object-fit: contain;
+            }
+/*            #content-region.video {
+                position: relative;
+                margin: 100px 300px;
+                height: calc(100% - 200px);
+                width: calc(100% - 600px);
+                min-height: calc((100vw - 600px) * .5625);
+                background-color: black;
+            }
+            #content-region.youtube {
+                position: relative;
+                margin: 100px 300px;
+                height: calc(100% - 200px);
+                width: calc(100% - 600px);
+                min-height: calc((100vw - 600px) * .5625);
+                background-color: black;
+            }*/
+
+        #play-button-container {
+            height: fit-content;
+            position: absolute;
+            transform: rotate( 90deg );
+            top: 55px;
+            right: 0px;
+        }
+        #play-button, #play-button:before, #play-button:after {
+            width: 5em;
+            height: 5em;
+        }
+
+        #play-button {
+            overflow: hidden;
+            position: absolute;
+            margin: 7em auto 0;
+            border-radius: 20%;
+            transform: translateY(50%) rotate(30deg) skewY(30deg) scaleX(.866);
+            cursor: pointer;
+            pointer-events: none;
+            opacity: 95%;
+        }
+
+            #play-button:before, #play-button:after {
+                position: absolute;
+                background: white;
+                pointer-events: auto;
+                content: '';
+            }
+
+            #play-button:before {
+                border-radius: 20% 20% 20% 53%;
+                transform: scaleX(1.155) skewY(-30deg) rotate(-30deg) translateY(-42.3%) skewX(30deg) scaleY(.866) translateX(-24%);
+            }
+
+            #play-button:after {
+                border-radius: 20% 20% 53% 20%;
+                transform: scaleX(1.155) skewY(-30deg) rotate(-30deg) translateY(-42.3%) skewX(-30deg) scaleY(.866) translateX(24%);
+            }
+        #preview-content-container:hover #play-button {
+            filter: drop-shadow(0 0 17px white);
+            opacity: 90%;
+        }
+
+        #back-arrow-container {
+            position: absolute;
+            object-fit: contain;
+            top: 10%;
+            left: 5%;
+            min-width: 10%;
+            max-width: 10%;
+            z-index: 5;
+        }
+
+        #back-arrow {
+            width: 100%;
+            content: url("StaticContent/back-arrow.png");
+        }
+
+        #back-arrow-hitbox-main {
+            position: absolute;
+            top: 28%;
+            left: 26%;
+            height: 44%;
+            width: 62%;
+        }
+    </style>
+
+
+    <div id="content-display-container"><div id="close-content-display" onclick="closeContentDisplay(); event.stopPropagation();"></div>
+        <div id="content-region">
+            <div id="content-detail"></div>
+        </div>
+    </div>
+    <div id="container">
+        <img id="background" src="StaticContent/DeskMenu.png" />
+        <div id="back-arrow-container">
+            <img id="back-arrow"/>
+            <div id="back-arrow-hitbox-main" class="back-arrow-hitbox"></div>
+        </div>
+        <div id="globe-container">
+            <div id="myearth"></div>
+        </div><!--globe-container-->
+    </div><!--container-->
+
+
+
+    <script src="ExternalLibraries/miniature.earth.js"></script>
+    <script src="StaticContent/Countries.js"></script>
+    <script src="Content/ContentLinking.js"></script>
+    <script src="VideoPlayer.js"></script>
+
+    <script>
+        var current_marker, hovered_marker, auto_rotate, back_button_clicked = false;
+        const VIDEO_CONTENT_ID = "content-detail";
+
+        setLatLongCoords();
+        window.addEventListener("earthjsload", earthJSLoaded);
+
+        var backHitBoxes = document.getElementById('back-arrow-hitbox-main').addEventListener('mouseenter', (x) => { if (!back_button_clicked) { x.target.previousElementSibling.style.content = 'url("StaticContent/back-arrow-hovered.png")'; console.log('mouseenter') }});
+        var backHitBoxes = document.getElementById('back-arrow-hitbox-main').addEventListener('mouseleave', (x) => { x.target.previousElementSibling.style.content = 'url("StaticContent/back-arrow.png")'; back_button_clicked = false });
+        var backHitBoxes = document.getElementById('back-arrow-hitbox-main').addEventListener('mousedown', (x) => { x.stopPropagation; x.target.previousElementSibling.style.content = 'url("StaticContent/back-arrow-clicked.png")'; back_button_clicked = true; console.log('mousedown') });
+        var backHitBoxes = document.getElementById('back-arrow-hitbox-main').addEventListener('mouseup', (x) => { x.target.previousElementSibling.style.content = 'url("StaticContent/back-arrow.png")'; back_button_clicked = false; returnToMenu(); });
+
+        //METHODS:
+            //returnToMenu():
+            //earthJSLoaded():
+            //generateGlobe():
+            //showGlobe(): blur background and grow globe. Enable pointer events once complete
+            //hideGlobe(): shrink globe and unblur background
+            //showTitleOverlay()
+            //hideTitleOverlay()
+            //showPreviewOverlay():
+            //closePreviewOverlay():
+            //showContentOverlay():
+            //closeContentOverlay():
+
+        function returnToMenu() {
+            hideGlobe()
+            setTimeout(function () {
+                myearth.destroy();
+                window.location.replace('/classroom.html');
+            }, 1000);
+            
+        }
+
+        function earthJSLoaded() {
+            generateGlobe();
+            showGlobe();
+        }
+
+        function generateGlobe() {
+            myearth = new Earth('myearth', {
+
+                location: { lat: 20, lng: 90 },
+                light: 'sun',
+                sunDirection: { x: 0, y: 0 },
+                mapLandColor: '#a5cb7b',
+                mapSeaColor: '#bbe6e9',
+                mapBorderColor: 'rgba(0,51,153,1)',
+                mapBorderWidth: 0.25,
+            });
+
+            myearth.addEventListener("ready", function () {
+                // add pins
+                for (var i = 0; i < content.length; i++) {
+
+                    var marker = this.addMarker({
+
+                        mesh: "Marker",
+                        color: '#2355a3',
+                        location: content[i].location,
+                        scale: 0.01,
+                        offset: 1.6,
+                        visible: false,
+                        transparent: true,
+                        hotspot: true,
+                        hotspotRadius: 0.5,
+                        hotspotHeight: 1.3,
+
+                        // custom property
+                        content_info: content[i],
+                        isTitleOverlayVisible: false,
+                        isContentOverlayVisible: false,
+
+                    });
+
+                    marker.addEventListener('click', showPreviewOverlay);
+                    marker.addEventListener('mouseover', showTitleOverlay);
+                    marker.addEventListener('mouseout', hideTitleOverlay);
+
+
+                    // animate marker
+                    setTimeout((function () {
+                        this.visible = true;
+                        this.animate('scale', 0.7, { duration: 140 });
+                        this.animate('offset', 0, { duration: 1100, easing: 'bounce' });
+                    }).bind(marker), 50 * i);
+
+                }
+
+                //Marker OnHover, title overlay
+                titleOverlay = this.addOverlay({
+                    content: '<div id="title-overlay-container"><div id="title-overlay-bubble"><div id="title-overlay-textblock"></div></div><div id="title-overlay-pointer"></div></div>',
+                    visible: false,
+                    containerScale: 1,
+                    depthScale: 0.0,
+                    offset: .8,
+                });
+
+                previewOverlay = this.addOverlay({
+                    content: '<div id="preview-block"><div id="close-preview-overlay" onclick="hidePreviewOverlay(); event.stopPropagation();"></div><div id="preview-content-title"></div><div id="preview-content-container"><div id="preview-content"></div><div id="play-button-container"><div id="play-button"></div></div></div></div>',
+                    visible: false,
+                    containerScale: 1,
+                    depthScale: 0.5
+                });
+            });
+                // close photo overlay when navigating away
+
+            myearth.addEventListener("change", function () {
+                if (!current_marker || auto_rotate) return;
+
+                if (Earth.getAngle(myearth.location, current_marker.location) > 45) {
+                    hidePreviewOverlay();
+                }
+
+            });
+
+            loadVideoPlayers();
+        }
+
+        function showGlobe() {
+            document.getElementById('background').style.filter = 'blur(5px)';
+            document.getElementById('myearth').style.transition = 'all 1s ease-in-out';
+            setTimeout(function () { document.getElementById('myearth').classList.add('show-globe') }, 100);
+            setTimeout(function () { document.getElementById('myearth').style.transition = 'all 0s'; }, 1000);
+        }
+        function hideGlobe() {
+            document.getElementById('background').style.filter = 'blur(0px)';
+            document.getElementById('myearth').style.transition = 'all 1s ease-in-out';
+            document.getElementById('myearth').classList.remove('show-globe');
+        }
+
+        function showTitleOverlay() {
+            //if the content overlay is visible, don't show title
+            if (this.isContentOverlayVisible) return;
+            //if the preview overlay is open, don't show any titles
+            if (previewOverlay.visible) return;
+            //if marker is too far from middle, don't show title
+            if (Earth.getAngle(myearth.location, this.location) > 80) return;
+            //if title is not visible already, show it
+            if (!this.isTitleOverlayVisible) {
+                this.isTitleOverlayVisible = true;
+
+                //check title content
+                if (this.content_info.title != undefined && this.content_info.title.trim() != "") {
+
+                    titleOverlay.location = this.location;
+                    titleOverlay.visible = true;
+
+                    document.getElementById('title-overlay-textblock').innerHTML = this.content_info.title.trim();
+
+                    setTimeout(function () {
+                        document.getElementById('title-overlay-container').className = 'content-appear';
+                    }, 120);
+                }
+            }
+            hovered_marker = this;
+        }
+        function hideTitleOverlay() {
+            if (!hovered_marker) return;
+
+            setTimeout(function () {
+                document.getElementById('title-overlay-container').className = '';
+                hovered_marker.isTitleOverlayVisible = false;
+                hovered_marker = false;
+            }, 120);
+        }
+
+        function showPreviewOverlay() {
+            hideTitleOverlay();
+            // close current photo
+            if (current_marker) {
+
+                hidePreviewOverlay();
+                window.setTimeout(showPreviewOverlay.bind(this), 120);
+
+                return;
+            }
+
+            // rotate earth if needed
+            if (myearth.goTo(this.location, { relativeDuration: 100, approachAngle: 12, end: function () { auto_rotate = false; } })) {
+                auto_rotate = true;
+            }
+
+            previewOverlay.location = this.location;
+            previewOverlay.visible = true;
+
+            //fill overlay with content
+            document.getElementById('preview-content-title').innerHTML = (this.content_info.title.trim() == "") ? "No Title" : this.content_info.title.trim();
+            document.getElementById('preview-content-container').onclick = () => openContentDisplay(this.content_info);
+            GenerateThumbnail('preview-content', this.content_info.src);
+
+            //prep content display
+            document.getElementById('content-detail').style.display = 'block';
+            changeVideo(this.content_info.src);
+
+            setTimeout(function () {
+                document.getElementById('preview-block').className = 'content-appear';
+                hideTitleOverlay();
+            }, 120);
+
+
+            this.isContentOverlayVisible = true;
+            this.animate('scale', 0.001, { duration: 150 });
+            current_marker = this;
+        }
+        function hidePreviewOverlay() {
+
+            if (!current_marker) return;
+
+            document.getElementById('preview-block').className = '';
+            previewOverlay.onclick = null;
+
+            setTimeout((function () {
+                //document.getElementById('preview-block').style.backgroundImage = 'none';
+                this.isContentOverlayVisible = false;
+                previewOverlay.visible = false;
+                this.opacity = 0.4;
+                this.animate('scale', .5, { duration: 150 });
+            }).bind(current_marker), 100);
+
+            current_marker = false;
+
+        }
+
+
+
+       
+
+
+        function openContentDisplay(content) {
+
+            //document.getElementById('content-region').innerHTML = '<img id="content-photo" src=' + content.src + ' onError="this.src = \' StaticContent/no-content.png\'"/>';
+
+            document.getElementById('content-region').className = 'video';
+            
+            if (content == undefined || content == null) return;
+
+            //document.getElementById('container').style.filter = 'blur(5px)';
+            document.getElementById('content-display-container').className = 'content-appear';
+
+            startVideo(content.startAt);
+
+        }
+
+        function closeContentDisplay() {
+            if (document.getElementById('content-region').classList.contains('video')) {
+                stopVideo();
+            }
+            //document.getElementById('container').style.filter = '';
+            document.getElementById('content-display-container').className = '';
+            //document.getElementById('photo-content-detail').innerHTML = '';
+        }
+
+    </script>
+</body>
+
+</html>

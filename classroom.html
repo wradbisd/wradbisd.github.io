@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Miniature Earth | Photo Locations Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        #container {
+            height: fit-content;
+            position: relative;
+        }
+
+        #background {
+            width: 100%;
+        }
+
+        #guidance-text-container {
+            height: 46.5%;
+            width: 37%;
+            position: absolute;
+            left: 57.9%;
+            top: 4.5%;
+        }
+
+        #guidance-text {
+            height: 100%;
+            width: 100%;
+            background-size: contain !important;
+            background-repeat: no-repeat !important;
+        }
+
+        .hitbox {
+            background-size: cover !important;
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+        }
+
+        #map-hitbox {
+            height: 46.5%;
+            width: 43%;
+            position: absolute;
+            left: 7.9%;
+            top: 14.5%;
+        }
+
+
+
+        .glow:hover::before {
+            transform: scale(1.1);
+            box-shadow: 0 0 35px #ffee10;
+        }
+
+        .glow:hover {
+            color: #ffee10;
+            box-shadow: 0 0 35px #ffee10;
+            text-shadow: 0 0 35px #ffee10;
+        }
+    </style>
+
+    <script src="ExternalLibraries/miniature.earth.js"></script>
+
+    <div id="container">
+        <img id="background" src="StaticContent/DeskMenu.png" />
+        <div id="guidance-text-container"><div id="guidance-text" style="background: url(/StaticContent/GuidancetextWithArrow.png)"></div></div>
+        <div id="map-hitbox" class="hitbox" data-goto="/ReadingAroundTheWorld.html" data-hoveranimation="/StaticContent/Animations/Map.gif" onmouseover="hitboxes.map = true;" onmouseout="hitboxes.map = false;"></div>
+    </div><!--wrapper-->
+
+
+    <script>
+        var hitboxes = {
+            map: false,
+            other: false,
+        }
+
+        document.querySelectorAll('.hitbox').forEach(hitbox => {
+            hitbox.addEventListener('mouseleave', _handleHitboxHover);
+            hitbox.addEventListener('mouseover', _handleHitboxHover);
+            hitbox.addEventListener('click', _handleHitboxClick);
+        })
+
+        function hitboxesHoveredCount() {
+            let count = 0;
+            for (var hitbox in hitboxes) {
+                if (hitboxes[hitbox] == true) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        function _handleHitboxHover(event) {
+            //turn off all other animations
+            document.querySelectorAll('.hitbox').forEach(hitbox => { hitbox.style.background = ""; hitbox.classList.remove('glow'); });
+            if (hitboxesHoveredCount() == 1) {
+                //change the background of the hitbox to a gif of its covered location to look animated
+                event.target.classList.add('glow');
+                event.target.style.background = "url(" + event.target.dataset.hoveranimation + ")";
+            }
+            else { document.querySelectorAll('.hitbox').forEach(hitbox => { hitbox.style.background = ""; hitbox.classList.remove('glow'); }); }
+        }
+
+        function _handleHitboxClick(event) {
+            if (hitboxesHoveredCount() == 1) {
+                if (!Earth.isSupported) {
+                    alert('WebGL is not supported, so this requested asset is not enabled.')
+                }
+                //goto
+                window.location.href = event.target.dataset.goto;
+            }
+        }
+
+    </script>
+</body>
+
+</html>
